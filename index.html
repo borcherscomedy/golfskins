@@ -314,7 +314,7 @@
           const newIndex = state.players.length;
           state.players.push({name: finalName, handicap: hcp});
           state.scores.push(range(18).map(()=>''));
-          buildTable(); buildNetTable();
+          buildTable(); buildNetTable(); setTimeout(()=> focusScore(newIndex, 0, true), 0);
           if (isMobileLike()){
             setTimeout(()=> focusScore(newIndex, 0, true), 0);
           }
@@ -349,28 +349,38 @@
       }));
 
       // Wire score inputs
-      tbl.querySelectorAll('input.score').forEach(inp=> inp.addEventListener('input', e=>{
-        const p = +e.target.dataset.player, h = +e.target.dataset.hole;
-        // Keep only a single digit on mobile for fast entry
-        if (isMobileLike()){
-          const valStr = String(e.target.value||'');
-          if (valStr.length > 1){ e.target.value = valStr.charAt(0); }
-        }
-        const parsed = e.target.value === '' ? '' : parseInt(e.target.value,10);
-        state.scores[p][h] = parsed;
-        updateRunningTotalsForPlayer(p);
-        if (state.gameType==='net') buildNetTable();
-        // Auto-advance on mobile after a digit is entered
-        if (isMobileLike() && e.target.value !== ''){
-          const nextH = h + 1;
-          if (nextH < 18){
-            focusScore(p, nextH, true);
-          } else {
-            // Last hole: just blur to dismiss keyboard
-            e.target.blur();
+      tbl.querySelectorAll('input.score').forEach(inp=> {
+        inp.addEventListener('input', e=>{
+          const p = +e.target.dataset.player, h = +e.target.dataset.hole;
+          // Keep only a single digit for fast entry everywhere
+          let s = String(e.target.value||'');
+          if (s.length > 1){ s = s.charAt(0); e.target.value = s; }
+          const parsed = s === '' ? '' : parseInt(s,10);
+          state.scores[p][h] = parsed;
+          updateRunningTotalsForPlayer(p);
+          if (state.gameType==='net') buildNetTable();
+          // Auto-advance after a digit is entered
+          if (s !== ''){
+            const nextH = h + 1;
+            if (nextH < 18){
+              focusScore(p, nextH, true);
+            } else {
+              e.target.blur();
+            }
           }
-        }
-      }));
+        });
+        // Keyboard nav conveniences
+        inp.addEventListener('keydown', e=>{
+          const p = +e.target.dataset.player, h = +e.target.dataset.hole;
+          if (e.key === 'Backspace' && e.target.selectionStart === 0 && e.target.selectionEnd === 0){
+            if (h > 0){ e.preventDefault(); focusScore(p, h-1, true); }
+          } else if (e.key === 'ArrowRight'){
+            e.preventDefault(); if (h < 17) focusScore(p, h+1, true);
+          } else if (e.key === 'ArrowLeft'){
+            e.preventDefault(); if (h > 0) focusScore(p, h-1, true);
+          }
+        });
+      });
 
       // Initial totals
       for (let p=0; p<state.players.length; p++) updateRunningTotalsForPlayer(p);
@@ -724,4 +734,3 @@
   </script>
 </body>
 </html>
-
