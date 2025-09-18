@@ -92,6 +92,12 @@
 
     /* Center the left sticky text in net table too */
     #netTable td.sticky-left{ text-align:center; font-weight:600; }
+      
+    /* Mobile tweaks */
+    @media (max-width: 640px){
+      input.score{ font-size:16px; width:30px; }
+      .addbox{ gap:4px; }
+    }
   </style>
 </head>
 <body>
@@ -213,6 +219,15 @@
     }
 
     // ---------- Scorecard (with inline player management) ----------
+    function isMobileLike(){
+      return (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    }
+    function focusScore(p,h, select){
+      const sel = `#cardTable input.score[data-player="${p}"][data-hole="${h}"]`;
+      const el = document.querySelector(sel);
+      if (el){ el.focus({preventScroll:false}); if (select) el.select(); el.scrollIntoView({block:'nearest', inline:'center'}); }
+    }
+
     function buildTable(){
       const tbl = document.getElementById('cardTable');
       let html = '<colgroup><col class="col-name"><col class="col-hole" span="18"><col class="col-sum" span="3"></colgroup><thead>';
@@ -296,9 +311,13 @@
           const hcp = clamp(parseInt(document.getElementById('newHcp').value||'0',10),0,54);
           if (state.players.length >= 36){ alert('Maximum 36 players'); return; }
           const finalName = name || `Player ${state.players.length+1}`;
+          const newIndex = state.players.length;
           state.players.push({name: finalName, handicap: hcp});
           state.scores.push(range(18).map(()=>''));
           buildTable(); buildNetTable();
+          if (isMobileLike()){
+            setTimeout(()=> focusScore(newIndex, 0, true), 0);
+          }
         });
       }
 
@@ -332,9 +351,25 @@
       // Wire score inputs
       tbl.querySelectorAll('input.score').forEach(inp=> inp.addEventListener('input', e=>{
         const p = +e.target.dataset.player, h = +e.target.dataset.hole;
-        state.scores[p][h] = e.target.value === '' ? '' : parseInt(e.target.value,10);
+        // Keep only a single digit on mobile for fast entry
+        if (isMobileLike()){
+          const valStr = String(e.target.value||'');
+          if (valStr.length > 1){ e.target.value = valStr.charAt(0); }
+        }
+        const parsed = e.target.value === '' ? '' : parseInt(e.target.value,10);
+        state.scores[p][h] = parsed;
         updateRunningTotalsForPlayer(p);
         if (state.gameType==='net') buildNetTable();
+        // Auto-advance on mobile after a digit is entered
+        if (isMobileLike() && e.target.value !== ''){
+          const nextH = h + 1;
+          if (nextH < 18){
+            focusScore(p, nextH, true);
+          } else {
+            // Last hole: just blur to dismiss keyboard
+            e.target.blur();
+          }
+        }
       }));
 
       // Initial totals
@@ -689,3 +724,4 @@
   </script>
 </body>
 </html>
+
