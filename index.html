@@ -3,50 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Golf Skins Calculator</title>
+  <title>Golf Skins Calculator — Horizontal, 36 Players, Proportional Pot</title>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; background:#0f172a; color:#e2e8f0; }
-    header { padding: 16px 20px; border-bottom: 1px solid #1f2937; position: sticky; top: 0; background: #0f172a; z-index: 5; }
-    h1 { margin: 0; font-size: 20px; }
-    main { max-width: 1200px; margin: 0 auto; padding: 18px; }
-    .row { display: flex; gap: 12px; flex-wrap: wrap; }
-    .card { background:#111827; border:1px solid #1f2937; border-radius:14px; padding:14px; }
-    .card h2 { margin:0 0 8px 0; font-size:16px; color:#93c5fd; }
-    label { display:block; font-size:12px; color:#cbd5e1; margin-bottom:6px; }
-    input, select, button { border-radius:10px; border:1px solid #334155; background:#0b1220; color:#e2e8f0; padding:8px 10px; }
-    input:focus, select:focus, button:focus { outline:2px solid #2563eb; outline-offset: 2px; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { border-bottom:1px solid #1f2937; padding:8px 6px; text-align:center; font-variant-numeric: tabular-nums; }
-    th { position: sticky; top: 62px; background:#0f172a; z-index: 4; }
-    .pill { display:inline-block; padding:2px 8px; border:1px solid #334155; border-radius:999px; font-size:12px; }
-    .grid { display:grid; gap:12px; }
-    .grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
-    .grid-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    .muted { color:#94a3b8; }
-    .success { color:#34d399; }
-    .warn { color:#f59e0b; }
-    .danger { color:#f87171; }
-    .winner { background:#052e16; }
-    .tie { background:#1f2937; }
-    .carry { background:#0b1220; }
-    .totals { font-weight: 600; background:#0b1220; }
-    .right { text-align:right; }
-    .small { font-size:12px; }
-    .flex-between { display:flex; justify-content:space-between; align-items:center; gap:8px; }
-    .nowrap { white-space: nowrap; }
+    :root{
+      --bg:#0f172a; --panel:#111827; --line:#1f2937; --text:#e2e8f0; --muted:#94a3b8; --brand:#93c5fd;
+      --chip:#334155; --stickyTop:0px; --rowH:28px;
+      /* Column alignment variables */
+      --nameColW:220px; --holeColW:36px; --sumColW:52px;
+    }
+    body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans"; background:var(--bg); color:var(--text); }
+    header{ padding:14px 18px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); z-index:10; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    h1{ margin:0; font-size:18px; }
+    main{ max-width:1400px; margin:0 auto; padding:16px; }
+    .row{ display:flex; gap:12px; flex-wrap:wrap; }
+    .card{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px; }
+    .card h2{ margin:0 0 8px 0; font-size:16px; color:var(--brand); }
+    label{ display:block; font-size:12px; color:#cbd5e1; margin-bottom:6px; }
+    input, select, button{ border-radius:10px; border:1px solid var(--chip); background:#0b1220; color:var(--text); padding:6px 8px; }
+    button.primary{ background:#0b1220; border-color:#2563eb; }
+    input:focus, select:focus, button:focus{ outline:2px solid #2563eb; outline-offset:2px; }
+    .muted{ color:var(--muted); }
+    .small{ font-size:12px; }
+    .pill{ display:inline-block; padding:2px 8px; border:1px solid var(--chip); border-radius:999px; font-size:12px; }
+    .winner{ background:#052e16; }
+    .tie{ background:#1f2937; }
+    .carry{ background:#0b1220; }
+    .netwin{ background:#052e16; color:#d1fae5; font-weight:700; }
+    .totals{ font-weight:600; background:#0b1220; }
+    .right{ text-align:right; }
+
+    table{ width:100%; border-collapse:collapse; table-layout: fixed; }
+    th, td{ border-bottom:1px solid var(--line); padding:2px 3px; text-align:center; font-variant-numeric: tabular-nums; }
+    th.sticky-left, td.sticky-left{ position:sticky; left:0; background:var(--bg); z-index:12; }
+
+    /* Freeze the three header rows */
+    thead th{ position:sticky; background:var(--bg); }
+    thead tr.hdr1 th{ top: var(--stickyTop); z-index: 60; }
+    thead tr.hdr2 th{ top: calc(var(--stickyTop) + var(--rowH)); z-index: 59; }
+    thead tr.hdr3 th{ top: calc(var(--stickyTop) + var(--rowH) * 2); z-index: 58; }
+
+    .scrollwrap{ overflow:auto; border:1px solid var(--line); border-radius:12px; }
+
+    /* Score input boxes */
+    input.score{ width:28px; padding:2px; text-align:center; -moz-appearance:textfield; font-size:14px; }
+    input.score::-webkit-outer-spin-button,
+    input.score::-webkit-inner-spin-button{ -webkit-appearance: none; margin:0; }
+    input.par, input.si{ width:32px; padding:2px; text-align:center; -moz-appearance:textfield; font-size:13px; }
+    input.par::-webkit-outer-spin-button,
+    input.par::-webkit-inner-spin-button,
+    input.si::-webkit-outer-spin-button,
+    input.si::-webkit-inner-spin-button{ -webkit-appearance: none; margin:0; }
+
+    /* Column widths for perfect alignment between gross and net tables */
+    col.col-name{ width: var(--nameColW); }
+    col.col-hole{ width: var(--holeColW); }
+    col.col-sum{ width: var(--sumColW); }
+
+    /* Identity cell */
+    .id-cell{ position:relative; display:flex; align-items:center; justify-content:center; min-height:32px; padding:0 28px; }
+    .id-text{ width:100%; text-align:center; font-weight:600; }
+    .id-text .muted{ font-weight:400; }
+    .remove-player{ position:absolute; left:6px; top:50%; transform:translateY(-50%); border:1px solid var(--line); background:#111827; padding:2px 6px; border-radius:6px; cursor:pointer; font-size:12px; }
+    .remove-player:hover{ background:#172133; }
+
+    .edit-player{ position:absolute; right:6px; top:50%; transform:translateY(-50%); border:1px solid var(--line); background:#111827; padding:2px 6px; border-radius:6px; cursor:pointer; font-size:12px; }
+    .edit-player:hover{ background:#172133; }
+
+    /* Inline name editor */
+    .pname-inline{ width:140px; max-width:100%; padding:2px 4px; text-align:center; }
+
+    /* Add-player row styling */
+    tr.add-row td{ text-align:left; }
+    .addbox{ display:flex; align-items:center; gap:6px; flex-wrap:nowrap; }
+    .addbox input{ padding:4px 6px; }
+    .addbox input::placeholder{ color:#94a3b8; }
+    .addbox #newName{ flex:1 1 100px; min-width:80px; }
+    .addbox #newHcp{ width:56px; }
+    .addbox button{ white-space:nowrap; }
+
+    /* Divider between header and first player: single 1px line on header only */
+    #cardTable thead tr.hdr3 th{ border-bottom:1px solid var(--line); position: sticky; }
+    #cardTable thead tr.hdr3 th::after{ content:""; position:absolute; left:0; right:0; bottom:-1px; height:1px; background:var(--line); }
+
+    /* Net scorecard divider mirrors gross */
+    #netTable thead tr.hdr2 th{ border-bottom:1px solid var(--line); position: sticky; }
+    #netTable thead tr.hdr2 th::after{ content:""; position:absolute; left:0; right:0; bottom:-1px; height:1px; background:var(--line); }
+
+    /* Center the left sticky text in net table too */
+    #netTable td.sticky-left{ text-align:center; font-weight:600; }
   </style>
 </head>
 <body>
-  <header class="flex-between">
-    <h1>Golf Skins Calculator</h1>
-    <div class="small muted">MVP · Net or Gross · Carryovers · 2–6 players</div>
+  <header>
+    <h1>Golf Skins — Horizontal Card · Up to 36 Players · Pot ÷ Total Skins</h1>
+    <div class="small muted">Net or Gross • Carryovers • Payouts proportional to skins won</div>
   </header>
   <main>
 
     <section class="row">
-      <div class="card" style="flex:2; min-width: 320px;">
-        <h2>Players & Settings</h2>
+      <div class="card" style="flex:2; min-width:340px;">
+        <h2>Game Settings</h2>
         <div class="row">
           <div>
             <label>Game Type</label>
@@ -58,356 +115,577 @@
           <div>
             <label>Carryovers on Ties</label>
             <select id="carryovers">
-              <option value="yes" selected>Yes</option>
-              <option value="no">No</option>
+              <option value="yes">Yes</option>
+              <option value="no" selected>No</option>
             </select>
           </div>
           <div>
-            <label>Skin Value ($)</label>
-            <input id="skinValue" type="number" step="0.01" value="1.00" />
-          </div>
-          <div>
-            <label>Players</label>
-            <select id="playerCount">
-              <option>2</option>
-              <option selected>3</option>
-              <option>4</option>
-              <option>5</option>
-              <option>6</option>
-            </select>
-          </div>
-          <div style="align-self:flex-end;">
-            <button id="applyPlayerCount">Apply</button>
+            <label>Total Skins Pot ($)</label>
+            <input id="totalPot" type="number" step="0.01" value="100.00" />
           </div>
         </div>
-        <div id="players" class="grid grid-3" style="margin-top:10px;"></div>
       </div>
 
-      <div class="card" style="flex:1; min-width: 280px;">
+      <div class="card" style="flex:1; min-width:300px;">
         <h2>Course Setup</h2>
-        <div class="grid grid-2">
+        <div class="row" style="gap:12px; align-items:flex-end; flex-wrap:wrap;">
           <div>
-            <label>Par (CSV, 18 values)</label>
+            <label>Par (CSV, 18)</label>
             <input id="parCsv" placeholder="4,4,3,5,..." />
           </div>
           <div>
-            <label>Stroke Index/HCP (1–18, CSV)</label>
+            <label>Stroke Index (1–18, CSV)</label>
             <input id="siCsv" placeholder="11,3,15,1,..." />
           </div>
+          <div>
+            <button id="loadDefaults">Defaults</button>
+            <button id="applyCourse" class="primary">Apply</button>
+          </div>
         </div>
-        <div class="small muted" style="margin-top:8px;">If empty, uses typical defaults.</div>
-        <div style="margin-top:10px;" class="flex-between">
-          <button id="loadDefaults">Load sensible defaults</button>
-          <button id="applyCourse">Apply to card</button>
-        </div>
+        <div class="small muted" style="margin-top:8px;">Leave blank for sensible defaults.</div>
       </div>
     </section>
 
     <section class="card" style="margin-top:14px;">
-      <h2>Scorecard</h2>
-      <div class="small muted" style="margin-bottom:6px;">Enter gross scores. Net is computed automatically if selected.</div>
-      <div style="overflow:auto;">
+      <h2>Scorecard (Horizontal)</h2>
+      <div class="small muted" style="margin-bottom:6px;">Enter <b>gross</b> scores. Add players directly on the card; type name, handicap, then scores.</div>
+      <div id="grossWrap" class="scrollwrap">
         <table id="cardTable"></table>
       </div>
-      <div class="flex-between" style="margin-top:12px; gap:10px; flex-wrap:wrap;">
-        <div class="small muted">Legend: <span class="pill">Winner</span> unique low | <span class="pill">Tie</span> no skin | <span class="pill">Carry</span> holes stacked</div>
-        <div class="right">
-          <button id="computeBtn">Compute Skins</button>
-          <button id="resetBtn" style="margin-left:8px;">Reset</button>
+      <div id="netSection" style="margin-top:12px; display:none;">
+        <div class="small muted" style="margin-bottom:6px;">Net Scorecard (auto)</div>
+        <div id="netWrap" class="scrollwrap">
+          <table id="netTable"></table>
+        </div>
+      </div>
+      <div class="row" style="justify-content:space-between; margin-top:10px;">
+        <div class="small muted">Legend: <span class="pill">Winner</span> unique low • <span class="pill">Tie</span> no skin • <span class="pill">Carry</span> stacked</div>
+        <div>
+          <button id="computeBtn" class="primary">Compute Skins</button>
+          <button id="resetBtn">Reset</button>
         </div>
       </div>
     </section>
 
     <section class="row" style="margin-top:14px;">
-      <div class="card" style="flex:1; min-width: 280px;">
+      <div class="card" style="flex:1; min-width:300px;">
         <h2>Results</h2>
         <div id="results"></div>
       </div>
-      <div class="card" style="flex:1; min-width: 280px;">
-        <h2>Payouts</h2>
+      <div class="card" style="flex:1; min-width:300px;">
+        <h2>Payouts (Proportional by Skins)</h2>
         <div id="payouts"></div>
       </div>
+    </section>
+
+    <section class="card" style="margin-top:14px;">
+      <h2>Developer Tests</h2>
+      <p class="small muted">Click Run to verify core logic. Tests do not modify your saved data.</p>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="runTests">Run Tests</button>
+        <div class="small muted">Output:</div>
+      </div>
+      <pre id="testOutput" style="white-space:pre-wrap; background:#0b1220; border:1px solid var(--line); border-radius:10px; padding:10px; margin-top:8px; max-height:200px; overflow:auto;"></pre>
     </section>
 
   </main>
 
   <script>
-    // --- Utility helpers ---
+    // ---------- Utilities ----------
     const range = (n) => Array.from({length:n}, (_,i)=>i);
     const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+    const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
 
-    // --- State ---
+    // ---------- State ----------
     let state = {
       gameType: 'net',
-      carryovers: true,
-      skinValue: 1.00,
-      players: [
-        { name: 'Alice', handicap: 12 },
-        { name: 'Bob', handicap: 8 },
-        { name: 'Charlie', handicap: 20 },
-      ],
-      par: new Array(18).fill(4).map((v,i)=> [3,4,4,5][[2,0,1,3][i%4]]), // 4/4/3/5-ish
-      si: [11,3,15,1,9,7,17,5,13,12,4,16,2,10,8,18,6,14], // typical mix
-      scores: [] // [holeIndex][playerIndex] => gross
+      carryovers: false,
+      totalPot: 100.00,
+      players: [], // players added inline
+      par: [4,4,3,5,4,4,3,5,4, 4,4,3,5,4,4,3,5,4],
+      si:  [11,3,15,1,9,7,17,5,13, 12,4,16,2,10,8,18,6,14],
+      scores: [], // [playerIndex][holeIndex]
+      lastResults: null,
     };
 
-    // Initialize empty scores
-    const resetScores = () => {
-      state.scores = range(18).map(()=> range(state.players.length).map(()=>''));
-    };
-
-    // Build Players UI
-    function renderPlayers() {
-      const wrap = document.getElementById('players');
-      wrap.innerHTML = '';
-      state.players.forEach((p, idx)=>{
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <div class="row" style="align-items: end;">
-            <div style="flex:1; min-width:120px;">
-              <label>Player ${idx+1} Name</label>
-              <input data-ptype="name" data-index="${idx}" value="${p.name}" />
-            </div>
-            <div>
-              <label>Handicap (Course)</label>
-              <input data-ptype="hcp" data-index="${idx}" type="number" value="${p.handicap}" />
-            </div>
-            <div>
-              <label class="muted">&nbsp;</label>
-              <button data-ptype="remove" data-index="${idx}">Remove</button>
-            </div>
-          </div>`;
-        wrap.appendChild(card);
-      });
-      const add = document.createElement('button');
-      add.textContent = 'Add Player';
-      add.onclick = () => { state.players.push({name:`Player ${state.players.length+1}`, handicap: 0}); resetScores(); buildTable(); renderPlayers(); };
-      wrap.appendChild(add);
-
-      wrap.querySelectorAll('input[data-ptype="name"]').forEach(inp=>{
-        inp.addEventListener('input', (e)=>{ const i=+e.target.dataset.index; state.players[i].name = e.target.value; buildTable(); });
-      });
-      wrap.querySelectorAll('input[data-ptype="hcp"]').forEach(inp=>{
-        inp.addEventListener('input', (e)=>{ const i=+e.target.dataset.index; state.players[i].handicap = clamp(parseInt(e.target.value||'0',10),0,54); });
-      });
-      wrap.querySelectorAll('button[data-ptype="remove"]').forEach(btn=>{
-        btn.addEventListener('click', (e)=>{ const i=+e.target.dataset.index; state.players.splice(i,1); resetScores(); buildTable(); renderPlayers(); });
-      });
+    function resetScores(){
+      state.scores = range(state.players.length).map(()=> range(18).map(()=>''));
     }
 
-    // Build Card Table
-    function buildTable() {
+    // ---------- Scorecard (with inline player management) ----------
+    function buildTable(){
       const tbl = document.getElementById('cardTable');
-      const cols = 3 + state.players.length; // Hole, Par, SI, players...
-      let html = '<thead><tr>';
-      html += '<th>Hole</th><th>Par</th><th>SI</th>';
-      state.players.forEach(p=> html += `<th>${p.name}</th>`);
-      html += '</tr></thead><tbody>';
-      for (let h=0; h<18; h++) {
-        html += `<tr data-hole="${h}">`;
-        html += `<td>${h+1}</td>`;
-        html += `<td><input class="par" data-hole="${h}" type="number" value="${state.par[h]}" /></td>`;
-        html += `<td><input class="si" data-hole="${h}" type="number" value="${state.si[h]}" /></td>`;
-        for (let p=0; p<state.players.length; p++) {
-          const v = state.scores[h]?.[p] ?? '';
-          html += `<td><input class="score" data-hole="${h}" data-player="${p}" type="number" inputmode="numeric" value="${v}" /></td>`;
+      let html = '<colgroup><col class="col-name"><col class="col-hole" span="18"><col class="col-sum" span="3"></colgroup><thead>';
+
+      // Row 1: Hole numbers 1-18
+      html += '<tr class="hdr1">';
+      html += '<th class="sticky-left">Hole</th>';
+      for (let h=0; h<18; h++) html += `<th>${h+1}</th>`;
+      html += '<th>Out</th><th>In</th><th>Total</th>';
+      html += '</tr>';
+
+      // Row 2: Stroke Index (HCP)
+      html += '<tr class="hdr2">';
+      html += '<th class="sticky-left">HCP</th>';
+      for (let h=0; h<18; h++) html += `<th><input class="si" data-hole="${h}" type="number" min="1" max="18" value="${state.si[h]}"></th>`;
+      html += '<th colspan="3"></th>';
+      html += '</tr>';
+
+      // Row 3: Par (editable)
+      html += '<tr class="hdr3">';
+      html += '<th class="sticky-left">Par</th>';
+      for (let h=0; h<18; h++) html += `<th><input class="par" data-hole="${h}" type="number" value="${state.par[h]}"></th>`;
+      html += '<th colspan="3"></th>';
+      html += '</tr>';
+
+      html += '</thead><tbody>';
+
+      // If players exist, render them then the add-row; otherwise show add-row first
+      const addRowHtml = `
+        <tr class="add-row">
+          <td class="sticky-left" colspan="1">
+            <div class="addbox">
+              <input id="newName" placeholder="Player name" />
+              <input id="newHcp" type="number" min="0" max="54" placeholder="HCP" />
+              <button id="addRowBtn" class="primary">Add Player</button>
+              <span class="small muted">(max 36)</span>
+            </div>
+          </td>
+          <td colspan="21" class="small muted"></td>
+        </tr>`;
+
+      if (state.players.length === 0){
+        html += addRowHtml; // first line when empty
+      }
+
+      // Player rows
+      for (let p=0; p<state.players.length; p++){
+        const player = state.players[p];
+        html += `<tr class="player-row" data-player="${p}">`;
+        html += `<td class="sticky-left">
+          <div class="id-cell">
+            <button class="remove-player" data-player="${p}" title="Remove player">✕</button>
+            <div class="id-text">${player.name} <span class="muted">(${player.handicap||0})</span></div>
+            <button class="edit-player" data-player="${p}" title="Edit name">✎</button>
+          </div>
+        </td>`;
+        for (let h=0; h<18; h++){
+          const v = state.scores[p]?.[h] ?? '';
+          html += `<td><input class="score" data-player="${p}" data-hole="${h}" type="number" inputmode="numeric" value="${v}"></td>`;
         }
+        html += `<td id="out-${p}">—</td><td id="in-${p}">—</td><td id="tot-${p}">—</td>`;
         html += '</tr>';
       }
-      // Totals row
-      html += `<tr class="totals"><td colspan="3" class="right">Front / Back / Total</td>`;
-      for (let p=0; p<state.players.length; p++) {
-        html += `<td id="tot-${p}">—</td>`;
+
+      if (state.players.length > 0){
+        html += addRowHtml; // add-row drops below the last added player
       }
-      html += '</tr>';
+
       html += '</tbody>';
       tbl.innerHTML = html;
 
-      // wire inputs
-      tbl.querySelectorAll('input.par').forEach(inp=> inp.addEventListener('input', e=>{
-        state.par[+e.target.dataset.hole] = parseInt(e.target.value||'4',10);
-      }));
-      tbl.querySelectorAll('input.si').forEach(inp=> inp.addEventListener('input', e=>{
-        state.si[+e.target.dataset.hole] = parseInt(e.target.value||'1',10);
-      }));
-      tbl.querySelectorAll('input.score').forEach(inp=> inp.addEventListener('input', e=>{
-        const h = +e.target.dataset.hole, p = +e.target.dataset.player;
-        state.scores[h][p] = e.target.value === '' ? '' : parseInt(e.target.value,10);
-        updateRunningTotals();
+      // Wire header inputs
+      tbl.querySelectorAll('input.par').forEach(inp=> inp.addEventListener('input', e=>{ state.par[+e.target.dataset.hole] = parseInt(e.target.value||'4',10); if (state.gameType==='net') buildNetTable(); }));
+      tbl.querySelectorAll('input.si').forEach(inp=> inp.addEventListener('input', e=>{ state.si[+e.target.dataset.hole] = clamp(parseInt(e.target.value||'1',10),1,18); if (state.gameType==='net') buildNetTable(); }));
+
+      // Wire add-row
+      const addBtn = document.getElementById('addRowBtn');
+      if (addBtn){
+        addBtn.addEventListener('click', ()=>{
+          const name = (document.getElementById('newName').value || '').trim();
+          const hcp = clamp(parseInt(document.getElementById('newHcp').value||'0',10),0,54);
+          if (state.players.length >= 36){ alert('Maximum 36 players'); return; }
+          const finalName = name || `Player ${state.players.length+1}`;
+          state.players.push({name: finalName, handicap: hcp});
+          state.scores.push(range(18).map(()=>''));
+          buildTable(); buildNetTable();
+        });
+      }
+
+      // Wire remove buttons
+      tbl.querySelectorAll('button.remove-player').forEach(btn=> btn.addEventListener('click', e=>{
+        const i = +e.currentTarget.dataset.player;
+        state.players.splice(i,1);
+        state.scores.splice(i,1);
+        buildTable(); buildNetTable();
       }));
 
-      updateRunningTotals();
+      // Wire edit-name buttons
+      tbl.querySelectorAll('button.edit-player').forEach(btn=> btn.addEventListener('click', e=>{
+        const i = +e.currentTarget.dataset.player;
+        const cell = e.currentTarget.closest('.id-cell');
+        const textDiv = cell && cell.querySelector('.id-text');
+        if (!textDiv) return;
+        // Swap display for inline input
+        textDiv.innerHTML = `<input class="pname-inline" data-player="${i}" value="${state.players[i].name}"> <span class="muted">(${state.players[i].handicap||0})</span>`;
+        const inp = textDiv.querySelector('input.pname-inline');
+        const finish = (save)=>{
+          const newVal = (inp.value||'').trim();
+          if (save && newVal) state.players[i].name = newVal;
+          buildTable(); buildNetTable();
+        };
+        inp.addEventListener('keydown', ev=>{ if (ev.key==='Enter') finish(true); if (ev.key==='Escape') finish(false); });
+        inp.addEventListener('blur', ()=> finish(true));
+        inp.focus(); inp.select();
+      }));
+
+      // Wire score inputs
+      tbl.querySelectorAll('input.score').forEach(inp=> inp.addEventListener('input', e=>{
+        const p = +e.target.dataset.player, h = +e.target.dataset.hole;
+        state.scores[p][h] = e.target.value === '' ? '' : parseInt(e.target.value,10);
+        updateRunningTotalsForPlayer(p);
+        if (state.gameType==='net') buildNetTable();
+      }));
+
+      // Initial totals
+      for (let p=0; p<state.players.length; p++) updateRunningTotalsForPlayer(p);
     }
 
-    function updateRunningTotals(){
-      for (let p=0; p<state.players.length; p++) {
-        let front=0, back=0;
-        for (let h=0; h<9; h++) front += Number.isFinite(state.scores[h][p]) ? state.scores[h][p] : 0;
-        for (let h=9; h<18; h++) back  += Number.isFinite(state.scores[h][p]) ? state.scores[h][p] : 0;
-        const tot = front + back;
-        document.getElementById(`tot-${p}`).textContent = `${front}/${back}/${tot}`;
+    function buildNetTable(highlights){
+      const sec = document.getElementById('netSection');
+      const tbl = document.getElementById('netTable');
+      if (!sec || !tbl) return;
+      if (state.gameType !== 'net'){ sec.style.display='none'; tbl.innerHTML=''; return; }
+      sec.style.display='block';
+
+      const nPlayers = state.players.length;
+      const net = Array.from({length:nPlayers}, function(_,p){
+        return Array.from({length:18}, function(_,h){
+          const g = state.scores[p]?.[h];
+          if (g === '' || !Number.isFinite(g)) return '';
+          const s = strokesForPlayerOnHole(parseInt(state.players[p].handicap||0,10), state.si[h]);
+          return g - s;
+        });
+      });
+
+      var html = '<colgroup><col class="col-name"><col class="col-hole" span="18"><col class="col-sum" span="3"></colgroup><thead>';
+      html += '<tr class="hdr1"><th class="sticky-left">Hole</th>';
+      for (var h=0; h<18; h++){ html += '<th>'+(h+1)+'</th>'; }
+      html += '<th>Out</th><th>In</th><th>Total</th></tr>';
+      html += '<tr class="hdr2"><th class="sticky-left">HCP</th>';
+      for (var h2=0; h2<18; h2++){ html += '<th>'+state.si[h2]+'</th>'; }
+      html += '<th colspan="3"></th></tr>';
+      html += '</thead><tbody>';
+
+      for (var p=0; p<nPlayers; p++){
+        var out=0, inn=0;
+        html += '<tr><td class="sticky-left"><div class="id-cell"><div class="id-text">'+state.players[p].name+' <span class="small muted">('+(state.players[p].handicap||0)+')</span></div><button class="edit-player" data-player="'+p+'" title="Edit name">✎</button></div></td>';
+        for (var hh=0; hh<18; hh++){
+          var val = net[p][hh];
+          var disp = (val === '' ? '' : val);
+          html += '<td id="net-p'+p+'-h'+hh+'">'+disp+'</td>';
+          if (val!=='' && Number.isFinite(val)){
+            if (hh<9) out += val; else inn += val;
+          }
+        }
+        var tot = out + inn;
+        html += '<td>'+ (out||0) +'</td><td>'+ (inn||0) +'</td><td>'+ (tot||0) +'</td></tr>';
+      }
+      html += '</tbody>';
+      tbl.innerHTML = html;
+
+      // wire edit-name buttons (net table)
+      tbl.querySelectorAll('button.edit-player').forEach(btn=> btn.addEventListener('click', function(e){
+        var i = +e.currentTarget.dataset.player;
+        var cell = e.currentTarget.closest('.id-cell');
+        var textDiv = cell && cell.querySelector('.id-text');
+        if (!textDiv) return;
+        textDiv.innerHTML = '<input class="pname-inline" data-player="'+i+'" value="'+(state.players[i].name||'')+'"> <span class="muted">('+(state.players[i].handicap||0)+')</span>';
+        var inp = textDiv.querySelector('input.pname-inline');
+        var finish = function(save){
+          var newVal = (inp.value||'').trim();
+          if (save && newVal) state.players[i].name = newVal;
+          buildTable(); buildNetTable(highlights);
+        };
+        inp.addEventListener('keydown', function(ev){ if (ev.key==='Enter') finish(true); if (ev.key==='Escape') finish(false); });
+        inp.addEventListener('blur', function(){ finish(true); });
+        inp.focus(); inp.select();
+      }));
+
+      if (Array.isArray(highlights)){
+        highlights.forEach(function(winP, h){
+          if (winP!==null && winP>=0){
+            var cell = document.getElementById('net-p'+winP+'-h'+h);
+            if (cell) cell.classList.add('netwin');
+          }
+        });
       }
     }
 
-    // Handicap stroke allocation for each hole per player
-    function strokesForPlayerOnHole(playerHcp, si) {
-      // full handicap: player gets 1 stroke on holes with SI <= playerHcp
-      // and an extra stroke on holes with SI <= (playerHcp - 18), etc.
-      let strokes = 0;
-      if (playerHcp <= 0) return 0;
-      if (si <= playerHcp) strokes += 1;
-      if (playerHcp > 18 && si <= (playerHcp - 18)) strokes += 1;
-      if (playerHcp > 36 && si <= (playerHcp - 36)) strokes += 1;
-      return strokes;
+    function updateRunningTotalsForPlayer(p){
+      let out=0, inn=0;
+      for (let h=0; h<9; h++) out += Number.isFinite(state.scores[p][h]) ? state.scores[p][h] : 0;
+      for (let h=9; h<18; h++) inn += Number.isFinite(state.scores[p][h]) ? state.scores[p][h] : 0;
+      const tot = out + inn;
+      const eo = document.getElementById(`out-${p}`), ei = document.getElementById(`in-${p}`), et = document.getElementById(`tot-${p}`);
+      if (eo) eo.textContent = out; if (ei) ei.textContent = inn; if (et) et.textContent = tot;
     }
 
-    function computeSkins(){
-      // clear row classes
-      document.querySelectorAll('#cardTable tbody tr').forEach(tr=>{
-        tr.classList.remove('winner','tie','carry');
-      });
+    // Handicap strokes per hole (full handicap)
+    function strokesForPlayerOnHole(playerHcp, si){
+      let s = 0; if (playerHcp <= 0) return 0;
+      if (si <= playerHcp) s += 1;
+      if (playerHcp > 18 && si <= (playerHcp - 18)) s += 1;
+      if (playerHcp > 36 && si <= (playerHcp - 36)) s += 1;
+      return s;
+    }
 
+    // Compute skins and payouts
+    function computeSkins(){
       const netGame = state.gameType === 'net';
       const carry = state.carryovers;
+
+      // Clear HCP row highlights
+      document.querySelectorAll('#cardTable thead tr.hdr2 th').forEach((th, idx)=>{
+        if (idx===0) return; th.classList.remove('winner','tie','carry');
+      });
+
       const nPlayers = state.players.length;
-      const skinValue = parseFloat(document.getElementById('skinValue').value || '1');
+      const skins = Array(nPlayers).fill(0);
+      const skinHoles = Array(nPlayers).fill(0);
+      let carryStack = 1;
+      const log = [];
+      const netWinners = Array(18).fill(null);
 
-      let carryStack = 1; // number of skins that current hole is worth
-      let skins = Array(nPlayers).fill(0);
-      let skinHoles = Array(nPlayers).fill(0);
-      let resultsLog = [];
+      for (let h=0; h<18; h++){
+        const colScores = state.players.map((_,p)=> state.scores[p][h]);
+        const complete = colScores.every(v => v !== '' && Number.isFinite(v));
+        if (!complete){ log.push({hole:h+1, note:'Incomplete'}); continue; }
 
-      for (let h=0; h<18; h++) {
-        const row = state.scores[h];
-        const valid = row.every(v => v !== '' && Number.isFinite(v));
-        if (!valid) { resultsLog.push({hole:h+1, note:'Incomplete scores — treated as no result'}); continue; }
-
-        // compute adjusted scores
-        const adj = row.map((gross, p)=>{
-          const si = state.si[h];
-          const strokes = netGame ? strokesForPlayerOnHole(parseInt(state.players[p].handicap||0,10), si) : 0;
-          return gross - strokes;
+        const adj = colScores.map((gross, p)=>{
+          const s = netGame ? strokesForPlayerOnHole(parseInt(state.players[p].handicap||0,10), state.si[h]) : 0;
+          return gross - s;
         });
-
-        // find unique low
         const min = Math.min(...adj);
         const winners = adj.map((v,i)=> v===min ? i : -1).filter(i=>i>=0);
 
-        if (winners.length === 1) {
+        const hcpCell = document.querySelector(`#cardTable thead tr.hdr2 th:nth-child(${h+2})`);
+        if (winners.length === 1){
           const w = winners[0];
           skins[w] += carry ? carryStack : 1;
           skinHoles[w] += 1;
-          resultsLog.push({hole:h+1, winner:w, skinsWon: carry ? carryStack : 1, adj, carryStack});
-          carryStack = 1; // reset
-          markRow(h, 'winner');
+          log.push({hole:h+1, winner:w, skinsWon: carry ? carryStack : 1});
+          if (hcpCell) hcpCell.classList.add('winner');
+          if (netGame) netWinners[h] = w;
+          carryStack = 1;
         } else {
-          // tie: no skin; may carry
-          resultsLog.push({hole:h+1, tie:true, adj, carryStack});
-          if (carry) {
+          log.push({hole:h+1, tie:true});
+          if (carry){
             carryStack += 1;
-            markRow(h, 'carry');
+            if (hcpCell) hcpCell.classList.add('carry');
           } else {
-            markRow(h, 'tie');
+            if (hcpCell) hcpCell.classList.add('tie');
           }
         }
       }
 
-      // Render results
-      renderResults(resultsLog, skins, skinHoles, skinValue);
+      state.lastResults = { skins, skinHoles, log, netWinners };
+      renderResults(log, skins, skinHoles);
+      buildNetTable(netWinners);
     }
 
-    function markRow(h, cls){
-      const tr = document.querySelector(`#cardTable tbody tr[data-hole="${h}"]`);
-      if (tr) tr.classList.add(cls);
-    }
-
-    function renderResults(log, skins, skinHoles, skinValue){
+    function renderResults(log, skins, skinHoles){
       const res = document.getElementById('results');
       const pay = document.getElementById('payouts');
       const names = state.players.map(p=>p.name);
 
+      // Per-hole log
       let html = '<div class="small muted">Per-hole results</div><ol style="margin-top:6px; padding-left:18px;">';
       for (const item of log){
-        const hole = `<span class="pill">H${item.hole}</span>`;
+        const hole = `<span class=\"pill\">H${item.hole}</span>`;
         if (item.winner !== undefined){
-          html += `<li>${hole} — <span class="success">${names[item.winner]}</span> won ${item.skinsWon} skin(s).</li>`;
+          html += `<li>${hole} — <span class=\"winner\" style=\"padding:0 6px; border-radius:6px;\">${names[item.winner]}</span> won ${item.skinsWon} skin(s)</li>`;
         } else if (item.tie){
-          html += `<li>${hole} — <span class="warn">Tie</span> ${state.carryovers? '(carried)' : ''}</li>`;
+          html += `<li>${hole} — <span class=\"tie\">Tie</span> ${state.carryovers? '(carried)' : ''}</li>`;
         } else {
-          html += `<li>${hole} — <span class="muted">Incomplete</span></li>`;
+          html += `<li>${hole} — <span class=\"muted\">Incomplete</span></li>`;
         }
       }
       html += '</ol>';
 
       const totalSkins = skins.reduce((a,b)=>a+b,0);
-
-      html += '<hr style="border:none;border-top:1px solid #1f2937; margin:10px 0;" />';
-      html += '<div class="grid grid-2">';
-      html += '<div><h3 class="small muted" style="margin:0 0 6px 0;">Skins by player</h3><table>';
+      html += '<hr style="border:none;border-top:1px solid var(--line); margin:10px 0;" />';
+      html += '<h3 class="small muted" style="margin:0 0 6px 0;">Skins by player</h3><table>';
       html += '<tr><th>Player</th><th>Skins</th><th>Holes Won</th></tr>';
-      state.players.forEach((p,i)=>{ html += `<tr><td class="right">${p.name}</td><td>${skins[i]}</td><td>${skinHoles[i]}</td></tr>`; });
-      html += `<tr class="totals"><td class="right">Total</td><td>${totalSkins}</td><td>—</td></tr>`;
-      html += '</table></div>';
-
-      // payouts
-      const potPerSkin = skinValue; // simple model: $ per skin
-      const payouts = skins.map(s => s * potPerSkin);
-      let payHtml = '<h3 class="small muted" style="margin:0 0 6px 0;">Payouts</h3><table>';
-      payHtml += '<tr><th>Player</th><th>Amount ($)</th></tr>';
-      state.players.forEach((p,i)=>{ payHtml += `<tr><td class="right">${p.name}</td><td>${payouts[i].toFixed(2)}</td></tr>`; });
-      payHtml += `<tr class="totals"><td class="right">Total Paid</td><td>${(payouts.reduce((a,b)=>a+b,0)).toFixed(2)}</td></tr>`;
-      payHtml += '</table>';
-
+      state.players.forEach((p,i)=>{ html += `<tr><td class=\"right\">${p.name}</td><td>${skins[i]}</td><td>${skinHoles[i]}</td></tr>`; });
+      html += `<tr class=\"totals\"><td class=\"right\">Total</td><td>${totalSkins}</td><td>—</td></tr>`;
+      html += '</table>';
       res.innerHTML = html;
+
+      // Payouts proportional to skins
+      const pot = parseFloat(document.getElementById('totalPot').value || '0');
+      let payHtml = '<div class="small muted" style="margin-bottom:6px;">Each skin is worth (Total Pot ÷ Total Skins). Players are paid skins × value.</div>';
+      if (!isFinite(totalSkins) || totalSkins <= 0){
+        payHtml += '<div class="tie">No awarded skins — pot unresolved (all ties or incomplete). Consider playoff or refund.</div>';
+      } else {
+        const perSkin = pot / totalSkins;
+        payHtml += `<div class=\"small muted\">Per-skin value: $${perSkin.toFixed(2)}</div>`;
+        payHtml += '<table><tr><th>Player</th><th>Skins</th><th>Amount ($)</th></tr>';
+        let totalPaid = 0;
+        state.players.forEach((p,i)=>{
+          const amt = skins[i] * perSkin;
+          totalPaid += amt;
+          payHtml += `<tr><td class=\"right\">${p.name}</td><td>${skins[i]}</td><td>${amt.toFixed(2)}</td></tr>`;
+        });
+        payHtml += `<tr class=\"totals\"><td class=\"right\">Total Paid</td><td>${totalSkins}</td><td>${totalPaid.toFixed(2)}</td></tr>`;
+        payHtml += '</table>';
+      }
       pay.innerHTML = payHtml;
     }
 
-    // --- Controls wiring ---
-    document.getElementById('gameType').addEventListener('change', e=> state.gameType = e.target.value);
-    document.getElementById('carryovers').addEventListener('change', e=> state.carryovers = (e.target.value==='yes'));
-    document.getElementById('skinValue').addEventListener('input', e=> state.skinValue = parseFloat(e.target.value||'1'));
+    // ---------- Tests ----------
+    function runTests(){
+      const out = document.getElementById('testOutput');
+      const orig = deepClone(state);
+      let logs = [];
 
-    document.getElementById('playerCount').addEventListener('change', ()=>{});
-    document.getElementById('applyPlayerCount').addEventListener('click', ()=>{
-      const n = parseInt(document.getElementById('playerCount').value,10);
-      const existing = state.players.length;
-      if (n > existing) {
-        for (let i=existing; i<n; i++) state.players.push({name:`Player ${i+1}`, handicap:0});
-      } else if (n < existing) {
-        state.players = state.players.slice(0,n);
+      function setPlayers(n){ state.players = range(n).map((i)=>({name:'P'+(i+1), handicap:0})); resetScores(); }
+      function setScores(generator){
+        state.scores = range(state.players.length).map((p)=> range(18).map((h)=> generator(p,h)));
       }
-      resetScores();
-      renderPlayers();
-      buildTable();
-    });
+      function summary(){ return state.lastResults ? state.lastResults.skins.slice() : null; }
+
+      try{
+        // Test 1: Gross game, no carryovers, 2 players; P1 wins every even hole, odds tie
+        state.gameType = 'gross'; state.carryovers = false; setPlayers(2);
+        setScores((p,h)=> (h%2===0 ? (p===0?4:5) : 4));
+        buildTable(); computeSkins();
+        const t1 = summary();
+        logs.push('Test 1 (Gross, no carry) expected [9,0], got ['+t1+']');
+
+        // Test 2: Net game, P1 hcp 18 vs P2 hcp 0, all gross=par => P1 wins all 18
+        state.gameType = 'net'; state.carryovers = false; setPlayers(2);
+        state.players[0].handicap = 18; state.players[1].handicap = 0;
+        state.par = Array(18).fill(4); state.si = range(18).map(i=>i+1);
+        setScores((p,h)=> 4);
+        buildTable(); computeSkins();
+        const t2 = summary();
+        logs.push('Test 2 (Net, P1 hcp18) expected [18,0], got ['+t2+']');
+
+        // Test 3: All ties -> 0 skins total
+        state.gameType = 'gross'; state.carryovers = false; setPlayers(3);
+        setScores((p,h)=> 4); buildTable(); computeSkins();
+        const t3 = summary();
+        const t3sum = t3.reduce((a,b)=>a+b,0);
+        logs.push('Test 3 (All ties) expected total 0, got '+t3sum);
+
+        // Test 4: Carryover stacking across 2 ties then a win = 3 skins
+        state.gameType = 'gross'; state.carryovers = true; setPlayers(2);
+        setScores((p,h)=>{
+          if (h===0 || h===1) return 4; // ties
+          if (h===2) return (p===1?4:5); // P2 wins unique low
+          return 4; // rest ties
+        });
+        buildTable(); computeSkins();
+        const t4 = summary();
+        logs.push('Test 4 (Carryover x2 then P2 wins) expected [0,3], got ['+t4+']');
+
+        // Test 5: Proportional payout sums to pot
+        state.gameType = 'gross'; state.carryovers = false; state.totalPot = 90; setPlayers(3);
+        setScores((p,h)=>{
+          if (h===0 || h===1) return (p===0?3:4); // P1 wins 2 holes
+          if (h===2) return (p===1?3:4);         // P2 wins 1 hole
+          return 4;                               // rest ties
+        });
+        buildTable(); computeSkins();
+        const t5 = summary();
+        const totalSkins5 = t5.reduce((a,b)=>a+b,0);
+        const perSkin5 = (state.totalPot / (totalSkins5||1));
+        const totalPaid5 = perSkin5 * totalSkins5;
+        logs.push('Test 5 (Payout) expected perSkin 30.00 & totalPaid 90.00, got perSkin '+perSkin5.toFixed(2)+' totalPaid '+totalPaid5.toFixed(2)+' skins ['+t5+']');
+
+        // Test 6: Net winners marking (P1 hcp=1 should win SI=1 hole)
+        state.gameType = 'net'; state.carryovers = false; setPlayers(2);
+        state.players[0].handicap = 1; state.players[1].handicap = 0;
+        state.par = Array(18).fill(4); state.si = range(18).map(i=>i+1);
+        setScores((p,h)=> 4);
+        buildTable(); computeSkins();
+        const winners6 = state.lastResults.netWinners;
+        logs.push('Test 6 (Net winner on SI=1) expected hole 1 winner P1 (index 0), got '+winners6[0]);
+
+        // Test 7: Incomplete hole should NOT advance carry stack
+        state.gameType = 'gross'; state.carryovers = true; setPlayers(2);
+        setScores((p,h)=> 4);
+        // Hole 0 tie -> carryStack=2
+        // Hole 1 incomplete (remove P2 score)
+        state.scores[1][1] = '';
+        // Hole 2 P2 wins uniquely
+        state.scores[0][2] = 5; state.scores[1][2] = 4;
+        buildTable(); computeSkins();
+        const t7 = summary();
+        logs.push('Test 7 (Carry skip incomplete) expected [0,2], got ['+t7+']');
+
+        // Test 8: Removing a player keeps logic intact (no crash) and recompute works
+        state.gameType = 'gross'; state.carryovers = false; setPlayers(3);
+        setScores((p,h)=> (p===0?3: (p===1?4:5))); // P1 wins many
+        buildTable();
+        // simulate remove middle player
+        state.players.splice(1,1); state.scores.splice(1,1);
+        buildTable(); computeSkins();
+        const t8 = summary();
+        logs.push('Test 8 (Remove player) players='+state.players.length+' skins ['+t8+']');
+
+        // Test 9: Rename player should not crash and persists in state
+        state.gameType = 'gross'; setPlayers(1); state.players[0].name = 'Alice';
+        buildTable(); computeSkins();
+        logs.push('Test 9 (Rename ok) name='+state.players[0].name);
+
+        // Test 10: Changing settings doesn't wipe scores
+        state.gameType = 'gross'; setPlayers(2);
+        setScores((p,h)=> (p===0?3:4));
+        const before = state.scores[0][0];
+        state.carryovers = true; state.totalPot = 123; // change settings
+        buildTable(); computeSkins();
+        const after = state.scores[0][0];
+        logs.push('Test 10 (Settings do not clear scores) hole1 before='+before+' after='+after);
+
+      } catch (e){
+        logs.push('Test harness error: '+e.message);
+      } finally {
+        // restore
+        state = orig; buildTable(); buildNetTable();
+      }
+
+      out.textContent = logs.join('\n');
+    }
+
+    // ---------- Wire controls ----------
+    document.getElementById('gameType').addEventListener('change', e=>{ state.gameType = e.target.value; buildNetTable(); });
+    document.getElementById('carryovers').addEventListener('change', e=> state.carryovers = (e.target.value==='yes'));
+    document.getElementById('totalPot').addEventListener('input', e=> state.totalPot = parseFloat(e.target.value||'0'));
 
     document.getElementById('loadDefaults').addEventListener('click', ()=>{
       state.par = [4,4,3,5,4,4,3,5,4, 4,4,3,5,4,4,3,5,4];
       state.si  = [11,3,15,1,9,7,17,5,13, 12,4,16,2,10,8,18,6,14];
       document.getElementById('parCsv').value = state.par.join(',');
       document.getElementById('siCsv').value = state.si.join(',');
+      buildTable(); buildNetTable();
     });
 
     document.getElementById('applyCourse').addEventListener('click', ()=>{
       const parseCsv = (txt, def, mapFn) => {
-        if (!txt.trim()) return def.slice();
+        if (!txt || !txt.trim()) return def.slice();
         const a = txt.split(',').map(s=>parseInt(s.trim(),10)).filter(n=>Number.isFinite(n));
         if (a.length !== 18) return def.slice();
         return mapFn ? a.map(mapFn) : a;
       };
       state.par = parseCsv(document.getElementById('parCsv').value, state.par);
       state.si  = parseCsv(document.getElementById('siCsv').value, state.si, n=> clamp(n,1,18));
-      buildTable();
+      buildTable(); buildNetTable();
     });
 
-    document.getElementById('computeBtn').addEventListener('click', computeSkins);
-    document.getElementById('resetBtn').addEventListener('click', ()=>{ resetScores(); buildTable(); document.getElementById('results').innerHTML=''; document.getElementById('payouts').innerHTML='';});
+    const computeBtn = document.getElementById('computeBtn');
+    if (computeBtn) computeBtn.addEventListener('click', computeSkins);
+    const resetBtn = document.getElementById('resetBtn');
+    if (resetBtn) resetBtn.addEventListener('click', ()=>{ state.players = []; resetScores(); buildTable(); buildNetTable(); document.getElementById('results').innerHTML=''; document.getElementById('payouts').innerHTML=''; });
 
-    // Initial render
+    const runBtn = document.getElementById('runTests');
+    if (runBtn) runBtn.addEventListener('click', runTests);
+
+    // ---------- Init ----------
     resetScores();
-    renderPlayers();
     buildTable();
+    buildNetTable();
   </script>
 </body>
 </html>
